@@ -34,6 +34,7 @@ import AccessibilityBehaviors from './views/AccessibilityBehaviors';
 import FocusZone from './views/FocusZoneDoc';
 import FocusTrapZone from './views/FocusTrapZoneDoc';
 import AutoFocusZone from './views/AutoFocusZoneDoc';
+import PerformanceTests from './views/PerformanceTests';
 
 const Builder = React.lazy(async () => ({
   default: (await import(/* webpackChunkName: "builder" */ '@fluentui/react-builder')).Builder,
@@ -91,6 +92,7 @@ const VirtualizedTablePrototype = React.lazy(() =>
 const FormValidationPrototype = React.lazy(() =>
   import(/* webpackChunkName: "prototypes" */ './prototypes/FormValidation'),
 );
+const RosterPrototype = React.lazy(() => import(/* webpackChunkName: "prototypes" */ './prototypes/Roster'));
 
 const Routes = () => (
   <React.Suspense fallback="Loading...">
@@ -118,6 +120,8 @@ const Routes = () => (
                 </Route>
                 <Route exact path="/quick-start" component={QuickStart} />
 
+                <Route exact path="/perf-tests" component={PerformanceTests} />
+                <Route exact path="/prototype-roster" component={RosterPrototype} />
                 <Route exact path="/prototype-chat-pane" component={ChatPanePrototype} />
                 <Route exact path="/prototype-chat-messages" component={ChatMessagesPrototype} />
                 <Route exact path="/prototype-custom-scrollbar" component={CustomScrollbarPrototype} />
