@@ -33,9 +33,9 @@ export const List: React.FunctionComponent<ListProps> = ({ onDragStart, style })
   const [supportedComponents, unsupportedComponents] = React.useMemo(
     () =>
       _.partition(_.values(componentInfoContext.byDisplayName), ({ displayName }) => {
-        return !EXCLUDED_COMPONENTS.some(name => name === displayName);
+        return displayName.match(filterRegexp) && !EXCLUDED_COMPONENTS.some(name => name === displayName);
       }),
-    [],
+    [filterRegexp],
   );
 
   const titleComponent = (Component, { content, expanded, ...rest }) => {
@@ -96,6 +96,9 @@ export const List: React.FunctionComponent<ListProps> = ({ onDragStart, style })
     [displayMode, handleMouseDown, supportedComponents],
   );
 
+  const treeItems = Object.values(treeobj).filter(treeItem => treeItem.items.length > 0);
+  const activeItems = filter ? treeItems.map(e => e.id) : [];
+
   return (
     <div
       role="complementary"
@@ -136,7 +139,7 @@ export const List: React.FunctionComponent<ListProps> = ({ onDragStart, style })
         onChange={handleFilterChange}
         value={filter}
       />
-      <Tree items={Object.values(treeobj)} />
+      <Tree items={treeItems} activeItemIds={activeItems} />
       {unsupportedComponents
         .filter(info => info.displayName.match(filterRegexp))
         .map(info => (
