@@ -38,8 +38,29 @@ export const readTreeFromURL = (url: string): JSONTreeElement | null => {
   try {
     return treeParse(treeString);
   } catch (e) {
-    // TODO: client should know it failed
-    return null;
+    return {
+      uuid: 'builder-root',
+      type: 'div',
+      props: {
+        children: [
+          {
+            uuid: 'error-message',
+            $$typeof: 'Symbol(react.element)',
+            type: 'Alert',
+            displayName: 'Alert',
+            props: {
+              icon: {
+                $$typeof: 'Symbol(react.element)',
+                type: 'ErrorIcon',
+                props: {},
+              },
+              content: "We can't load components from url",
+              danger: true,
+            },
+          },
+        ],
+      },
+    };
   }
 };
 
