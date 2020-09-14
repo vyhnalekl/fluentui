@@ -5,6 +5,7 @@ import * as _ from 'lodash';
 import * as FUI from '@fluentui/react-northstar';
 import * as FUIIcons from '@fluentui/react-icons-northstar';
 import * as FabricButtons from '@fluentui/react/lib/Button';
+import * as FabricCheckbox from '@fluentui/react/lib/Checkbox';
 
 import { JSONTreeElement } from './components/types';
 import { getUUID } from './utils/getUUID';
@@ -60,7 +61,7 @@ export const COMPONENT_GROUP = {
     'Fluent.Tree',
     'Fluent.HierarchicalTree',
   ],
-  FabricActionable: ['Fabric.PrimaryButton', 'Fabric.DefaultButton', 'Fabric.ActionButton'],
+  FabricActionable: ['Fabric.PrimaryButton', 'Fabric.DefaultButton', 'Fabric.ActionButton', 'Fabric.Checkbox'],
 };
 
 export const DRAGGING_ELEMENTS = {
@@ -70,6 +71,8 @@ export const DRAGGING_ELEMENTS = {
   'Fabric.DefaultButton': <FabricButtons.DefaultButton text="I am a fabric default button." />,
 
   'Fabric.ActionButton': <FabricButtons.ActionButton text="I am a fabric action button." />,
+
+  'Fabric.Checkbox': <FabricCheckbox.Checkbox label="Unchecked checkbox" />,
 
   // HTML ELEMENTS
   div: { children: 'I am a <div>' },
@@ -445,41 +448,55 @@ export const DRAGGING_ELEMENTS = {
 };
 
 const resolveImport = {
-  '@fluentui/react/lib/Button': FabricButtons,
   '@fluentui/react-northstar': FUI,
+  '@fluentui/react/lib/Button': FabricButtons,
+  '@fluentui/react/lib/Checkbox': FabricCheckbox,
 };
 
 export const resolveComponent = (displayName, moduleName): React.ElementType => {
   if (moduleName) {
     return resolveImport[moduleName][displayName.split('.')[1]] || resolveImport[moduleName][displayName] || 'div';
   }
-  return FUI[displayName] || FUIIcons[displayName] || displayName;
+  return FUI[displayName] || FUIIcons[displayName.split('.')[1]] || displayName;
 };
 
+const moduleToPrefix = {
+  '@fluentui/react-northstar': 'Fluent',
+  '@fluentui/react/lib/Button': 'Fabric',
+  '@fluentui/react/lib/Checkbox': 'Fabric',
+};
 // FIXME: breaks for <button>btn</button>
-const toJSONTreeElement = input => {
+const toJSONTreeElement = (input, moduleName, displayName) => {
   if (input?.as && _.isPlainObject(input.as)) {
+    let type = input.as.displayName;
+    if (!type.includes('.')) {
+      type = `${moduleToPrefix[moduleName]}.${input.as.displayName}`;
+    }
     return {
-      type: input.as.displayName,
+      uuid: getUUID(),
+      type,
       props: { ...input, as: undefined },
+      moduleName,
       $$typeof: 'Symbol(react.element)',
     };
   }
   if (isElement(input)) {
+    const type =
+      (input as React.ReactElement).type !== 'string' &&
+      FUIIcons[((input as React.ReactElement).type as any).displayName]
+        ? `FUIIcons.${((input as React.ReactElement).type as any).displayName}`
+        : displayName;
     return {
       $$typeof: 'Symbol(react.element)',
-      type:
-        typeof (input as React.ReactElement).type === 'string'
-          ? (input as React.ReactElement).type
-          : ((input as React.ReactElement).type as any).displayName.replace('Customized', 'Fabric.'),
-      props: toJSONTreeElement(input.props),
+      type,
+      props: toJSONTreeElement(input.props, moduleName, displayName),
     };
   }
   const result = _.transform(input, (acc, value, key) => {
     if (Array.isArray(value)) {
-      acc[key] = toJSONTreeElement(value);
+      acc[key] = toJSONTreeElement(value, moduleName, displayName);
     } else if (_.isPlainObject(value)) {
-      acc[key] = toJSONTreeElement(value);
+      acc[key] = toJSONTreeElement(value, moduleName, displayName);
     } else {
       acc[key] = value;
     }
@@ -492,7 +509,7 @@ export const resolveDraggingElement: (displayName: string, module: string, dragg
   module,
   draggingElements = DRAGGING_ELEMENTS,
 ) => {
-  const jsonTreeElement = toJSONTreeElement(draggingElements[displayName]);
+  const jsonTreeElement = toJSONTreeElement(draggingElements[displayName], module, displayName);
   return {
     uuid: getUUID(),
     $$typeof: 'Symbol(react.element)',
@@ -587,65 +604,7 @@ export const renderJSONTreeToJSXElement = (
   });
 };
 
-const packageImportList: Record<string, CodeSandboxImport> = {
-  '@fluentui/react-icons-northstar': {
-    version: projectPackageJson.version,
-    required: false,
-  },
-  '@fluentui/react': {
-    version: fabricPackageJson.version,
-    required: true,
-  },
-  '@fluentui/react-northstar': {
-    version: projectPackageJson.version,
-    required: false,
-  },
-};
-
-export const JSONTreeToImports = (tree: JSONTreeElement, imports = {}) => {
-  if (tree.props?.icon) {
-    const iconModule =
-      tree.moduleName === '@fluentui/react-northstar' ? '@fluentui/react-icons-northstar' : 'ErrorNoPackage';
-    if (imports.hasOwnProperty(iconModule)) {
-      if (!imports[iconModule].includes(tree.props?.icon.type)) {
-        imports[iconModule].push(tree.props?.icon.type);
-      }
-    } else {
-      imports[iconModule] = [tree.props?.icon.type];
-    }
-  }
-  if (tree.moduleName && tree.props?.trigger) {
-    if (tree.props?.trigger.$$typeof === 'Symbol(react.element)') {
-      if (imports.hasOwnProperty(tree.moduleName)) {
-        if (!imports[tree.moduleName].includes(tree.props?.trigger.type)) {
-          imports[tree.moduleName].push(tree.props?.trigger.type);
-        }
-      } else {
-        imports[tree.moduleName] = [tree.props?.trigger.type];
-      }
-    }
-  }
-  if (tree.moduleName && tree.$$typeof === 'Symbol(react.element)') {
-    if (imports.hasOwnProperty(tree.moduleName)) {
-      if (!imports[tree.moduleName].includes(tree.displayName.split('.')[1])) {
-        imports[tree.moduleName].push(tree.displayName.split('.')[1]);
-      }
-    } else {
-      imports[tree.moduleName] = [tree.displayName.split('.')[1]];
-    }
-  }
-  Array.isArray(tree.props?.children) &&
-    tree.props?.children?.forEach(item => {
-      if (typeof item !== 'string') {
-        imports = JSONTreeToImports(item, imports);
-      }
-    });
-  return imports;
-};
-
 export const getCodeSandboxInfo = (tree: JSONTreeElement, code: string) => {
-  const imports: Record<string, string[]> = JSONTreeToImports(tree);
-  let codeSandboxExport = 'import * as React from "react";\n';
   const packageImports: Record<string, CodeSandboxImport> = {
     '@fluentui/code-sandbox': {
       version: sandboxPackageJson.version,
@@ -653,6 +612,14 @@ export const getCodeSandboxInfo = (tree: JSONTreeElement, code: string) => {
     },
     '@fluentui/react-northstar': {
       version: projectPackageJson.version,
+      required: true,
+    },
+    '@fluentui/react-icons-northstar': {
+      version: projectPackageJson.version,
+      required: false,
+    },
+    '@fluentui/react': {
+      version: fabricPackageJson.version,
       required: true,
     },
     react: {
@@ -668,30 +635,75 @@ export const getCodeSandboxInfo = (tree: JSONTreeElement, code: string) => {
       required: true,
     },
   };
-  for (const [module, components] of Object.entries(imports)) {
-    if (module === '@fluentui/react/lib/Button') {
-      codeSandboxExport += `import * as Fabric from "${module}";\n`;
-      packageImports['@fluentui/react'] = packageImportList['@fluentui/react'];
-    } else {
-      codeSandboxExport += `import {${components.join(', ')}} from "${module}";\n`;
-      if (packageImportList[module]) {
-        packageImports[module] = packageImportList[module];
-      } else {
-        console.error(
-          `Undefined module "${module}" for export to codesandbox for components {${components.join(', ')}} `,
-        );
-      }
-    }
-  }
-  codeSandboxExport += `\n export default function Example() { \n return (\n
-  ${parseToCodeWithFabric(code)} \n);}`;
+
+  const codeSandboxExport = `import * as React from "react";
+  import * as Fluent from "@fluentui/react-northstar";
+  import * as FUIIcons from "@fluentui/react-icons-northstar";
+  import * as Fabric from "@fluentui/react";\n
+  export default function Example() { \n return (\n
+  ${code} \n);}`;
 
   return { code: codeSandboxExport, imports: packageImports };
 };
 
-export const parseToCodeWithFabric = code => {
-  // TODO: what if there is '<Customized' somewhere as a text
-  return code.replace(new RegExp('<Customized', 'g'), '<Fabric.').replace(new RegExp('</Customized', 'g'), '</Fabric.');
+export const parseToCode = (tree, tab = '') => {
+  tab += '\t';
+  let code = '';
+  if (tree.uuid !== 'builder-root' && !tree.$$typeof && Array.isArray(tree)) {
+    tree.forEach(entry => {
+      if (_.isPlainObject(entry)) {
+        code += `${tab}${parseToCode(entry, tab)},\n`;
+      } else {
+        code += `"${entry}",`;
+      }
+    });
+    return code;
+  }
+  if (tree.uuid !== 'builder-root' && !tree.$$typeof && _.isPlainObject(tree)) {
+    return `{\n ${Object.entries(tree)
+      .map(entry => {
+        if (_.isPlainObject(entry[1])) {
+          return `${tab}${entry[0]}: ${parseToCode(entry[1], tab)}`;
+        }
+        return `${tab}${entry[0]}:"${entry[1]}"`;
+      })
+      .join(',\n')} \n${tab.replace('\t', '')}}`;
+  }
+
+  const component = tree.type;
+  let propsString = `${tab}data-builder-id="${tree.uuid}"\n`;
+  tree.props &&
+    Object.entries(tree.props).forEach(entry => {
+      if (!(entry[0] === 'children' || typeof entry[1] === 'function')) {
+        if (Array.isArray(entry[1])) {
+          propsString += `${tab}${entry[0]}={[
+            ${parseToCode(entry[1], tab)}
+          ]}\n`;
+        } else if (_.isPlainObject(entry[1])) {
+          propsString += `${tab}${entry[0]}={${parseToCode(entry[1], tab)} ${tab}}\n`;
+        } else {
+          propsString += `${tab}${entry[0]}="${entry[1]}"\n`;
+        }
+      }
+    });
+  code += `<${component} \n ${propsString}`;
+  if (tree.props && tree.props.children) {
+    if (Array.isArray(tree.props.children)) {
+      code += `${tab}>\n`;
+      tree.props.children.forEach(item => {
+        if (typeof item !== 'string') {
+          code += `${tab}${parseToCode(item, tab)}\n`;
+        }
+      });
+      code += `${tab.replace('\t', '')}</${component}>`;
+    } else {
+      code += `children="${tree.props.children}" \n ${tab.replace('\t', '')}/>\n`;
+    }
+  } else {
+    code += `${tab.replace('\t', '')}/>\n`;
+  }
+
+  return code;
 };
 
 /**

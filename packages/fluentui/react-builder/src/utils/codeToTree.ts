@@ -1,6 +1,7 @@
 import { transform } from '@babel/standalone';
 import { getUUID } from './getUUID';
 import { JSONTreeElement } from '../components/types';
+import { componentInfoContext } from '../componentInfo/componentInfoContext';
 
 const prefixElementNamesPlugin = ({ types }) => {
   const hackElementName = elementNode => {
@@ -28,11 +29,6 @@ const prefixElementNamesPlugin = ({ types }) => {
   };
 };
 
-const prefixToModuleName = {
-  Fluent: '@fluentui/react-northstar',
-  Fabric: '@fluentui/react/lib/Button',
-};
-
 export const codeToTree: (code: string) => JSONTreeElement = code => {
   const compiled = transform(code, {
     plugins: [prefixElementNamesPlugin],
@@ -51,11 +47,12 @@ export const codeToTree: (code: string) => JSONTreeElement = code => {
       }
     }
 
-    const isIcon = props?.['data-builder-id'] === undefined;
-    const isDiv = name === 'div';
-    const isComponent = objectName && objectName[1] && prefixToModuleName[objectName[1]];
-    if (!(isIcon || isDiv || isComponent)) {
-      name = `Fluent.${name}`;
+    // eslint-disable-next-line
+    const isElement = 'A' <= name[0] && name[0] <= 'Z';
+    const isComponent = isElement && (!props || (props && props['data-builder-id'] !== 'undefined'));
+    let componentName = name;
+    if (isComponent && !name.includes('.')) {
+      componentName = `Fluent.${name}`;
     }
 
     const uuid = props?.hasOwnProperty('data-builder-id') ? props['data-builder-id'] : getUUID();
@@ -63,14 +60,13 @@ export const codeToTree: (code: string) => JSONTreeElement = code => {
 
     return {
       type: name,
-      displayName: name,
-      ...(isComponent
-        ? { moduleName: prefixToModuleName[objectName[1]] }
-        : isIcon || isDiv
-        ? {}
-        : { moduleName: prefixToModuleName['Fluent'] }),
+      displayName: componentName,
+      ...(isComponent &&
+        componentInfoContext.byDisplayName[componentName] && {
+          moduleName: componentInfoContext.byDisplayName[componentName].moduleName,
+        }),
       uuid,
-      ...(name.match(/^[A-Za-z]/) && { $$typeof: 'Symbol(react.element)' }),
+      ...(isElement && { $$typeof: 'Symbol(react.element)' }),
       props: { ...props, ...(children.length > 0 && { children }) },
     };
   };

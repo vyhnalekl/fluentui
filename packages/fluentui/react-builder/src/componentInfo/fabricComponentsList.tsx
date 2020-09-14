@@ -1,6 +1,6 @@
 import { ComponentInfo } from './types';
 
-export const fabricComponents: ComponentInfo[] = [
+export const buttonComponents: ComponentInfo[] = [
   {
     constructorName: 'FabricDefaultButton',
     componentClassName: 'FabricDefaultButton',
@@ -144,6 +144,68 @@ export const fabricComponents: ComponentInfo[] = [
         defaultValue: 'I am a Fabric Button',
         description: 'Text of the button',
         name: 'text',
+        required: false,
+        tags: [],
+        types: [{ name: 'string', keyword: true }],
+      },
+      {
+        defaultValue: '',
+        description: 'The detailed description of the button',
+        name: 'ariaDescription',
+        required: false,
+        tags: [],
+        types: [{ name: 'string', keyword: true }],
+      },
+      {
+        defaultValue: false,
+        description: 'Disabled button',
+        name: 'disabled',
+        required: false,
+        tags: [],
+        types: [{ name: 'boolean', keyword: true }],
+      },
+      {
+        defaultValue: false,
+        description: 'Checked of button',
+        name: 'checked',
+        required: false,
+        tags: [],
+        types: [{ name: 'boolean', keyword: true }],
+      },
+    ],
+    repoPath: 'N/A',
+    subcomponentName: 'N/A',
+    subcomponents: [],
+    type: 'component',
+  },
+];
+
+export const checkboxComponents: ComponentInfo[] = [
+  {
+    constructorName: 'FabricCheckbox',
+    componentClassName: 'FabricCheckbox',
+    implementsCreateShorthand: false,
+    displayName: 'Checkbox',
+    filename: 'N/A',
+    filenameWithoutExt: 'N/A',
+    docblock: {
+      description: 'V7 Default Button from @fluentui/react',
+      tags: [
+        {
+          description: 'N/A',
+          title: 'N/A',
+        },
+      ],
+    },
+    apiPath: 'N/A',
+    isChild: false,
+    isParent: false,
+    parentDisplayName: 'N/A',
+    props: [
+      {
+        defaultValue: '',
+        description: 'Text of the button',
+        name: 'label',
         required: false,
         tags: [],
         types: [{ name: 'string', keyword: true }],
