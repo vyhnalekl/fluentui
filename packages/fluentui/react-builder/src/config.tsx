@@ -6,6 +6,7 @@ import * as FUI from '@fluentui/react-northstar';
 import * as FUIIcons from '@fluentui/react-icons-northstar';
 import * as FabricButtons from '@fluentui/react/lib/Button';
 import * as FabricCheckbox from '@fluentui/react/lib/Checkbox';
+import * as FabricDropdown from '@fluentui/react/lib/Dropdown';
 
 import { JSONTreeElement } from './components/types';
 import { getUUID } from './utils/getUUID';
@@ -61,7 +62,13 @@ export const COMPONENT_GROUP = {
     'Fluent.Tree',
     'Fluent.HierarchicalTree',
   ],
-  FabricActionable: ['Fabric.PrimaryButton', 'Fabric.DefaultButton', 'Fabric.ActionButton', 'Fabric.Checkbox'],
+  FabricActionable: [
+    'Fabric.PrimaryButton',
+    'Fabric.DefaultButton',
+    'Fabric.ActionButton',
+    'Fabric.Checkbox',
+    'Fabric.Dropdown',
+  ],
 };
 
 export const DRAGGING_ELEMENTS = {
@@ -73,6 +80,18 @@ export const DRAGGING_ELEMENTS = {
   'Fabric.ActionButton': <FabricButtons.ActionButton text="I am a fabric action button." />,
 
   'Fabric.Checkbox': <FabricCheckbox.Checkbox label="Unchecked checkbox" />,
+
+  'Fabric.Dropdown': (
+    <FabricDropdown.Dropdown
+      placeholder="Select an option"
+      options={[
+        { key: 'A', text: 'Option A' },
+        { key: 'B', text: 'Option B' },
+        { key: 'C', text: 'Option C', disabled: true },
+        { key: 'D', text: 'Option D' },
+      ]}
+    />
+  ),
 
   // HTML ELEMENTS
   div: { children: 'I am a <div>' },
@@ -451,6 +470,7 @@ const resolveImport = {
   '@fluentui/react-northstar': FUI,
   '@fluentui/react/lib/Button': FabricButtons,
   '@fluentui/react/lib/Checkbox': FabricCheckbox,
+  '@fluentui/react/lib/Dropdown': FabricDropdown,
 };
 
 export const resolveComponent = (displayName, moduleName): React.ElementType => {
@@ -464,6 +484,7 @@ const moduleToPrefix = {
   '@fluentui/react-northstar': 'Fluent',
   '@fluentui/react/lib/Button': 'Fabric',
   '@fluentui/react/lib/Checkbox': 'Fabric',
+  '@fluentui/react/lib/Dropdown': 'Fabric',
 };
 // FIXME: breaks for <button>btn</button>
 const toJSONTreeElement = (input, moduleName, displayName) => {

@@ -3,7 +3,7 @@
 
 import * as React from 'react';
 import { ComponentInfo } from './types';
-import { buttonComponents, checkboxComponents } from './fabricComponentsList';
+import { buttonComponents, checkboxComponents, dropdownComponents } from './fabricComponentsList';
 
 function importAll(contexts: __WebpackModuleApi.RequireContext[]): ComponentInfo[] {
   const cache: ComponentInfo[] = [];
@@ -46,6 +46,12 @@ buttonComponents.forEach(item => {
 
 checkboxComponents.forEach(item => {
   item.moduleName = '@fluentui/react/lib/Checkbox';
+  item.displayName = `Fabric.${item.displayName}`;
+  componentInfoContext.byDisplayName[item.displayName] = item;
+});
+
+dropdownComponents.forEach(item => {
+  item.moduleName = '@fluentui/react/lib/Dropdown';
   item.displayName = `Fabric.${item.displayName}`;
   componentInfoContext.byDisplayName[item.displayName] = item;
 });

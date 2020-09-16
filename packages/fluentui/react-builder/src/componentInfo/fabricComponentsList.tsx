@@ -241,3 +241,57 @@ export const checkboxComponents: ComponentInfo[] = [
     type: 'component',
   },
 ];
+
+export const dropdownComponents: ComponentInfo[] = [
+  {
+    constructorName: 'Dropdown',
+    componentClassName: 'Dropdown',
+    implementsCreateShorthand: false,
+    displayName: 'Dropdown',
+    filename: 'N/A',
+    filenameWithoutExt: 'N/A',
+    docblock: {
+      description: 'V7 Dropdown from @fluentui/react',
+      tags: [
+        {
+          description: 'N/A',
+          title: 'N/A',
+        },
+      ],
+    },
+    apiPath: 'N/A',
+    isChild: false,
+    isParent: false,
+    parentDisplayName: 'N/A',
+    props: [
+      {
+        defaultValue: '',
+        description: 'Text of the button',
+        name: 'placeholder',
+        required: false,
+        tags: [],
+        types: [{ name: 'string', keyword: true }],
+      },
+      {
+        defaultValue: '',
+        description: 'The detailed description of the button',
+        name: 'label',
+        required: false,
+        tags: [],
+        types: [{ name: 'string', keyword: true }],
+      },
+      {
+        defaultValue: false,
+        description: 'Disabled button',
+        name: 'disabled',
+        required: false,
+        tags: [],
+        types: [{ name: 'boolean', keyword: true }],
+      },
+    ],
+    repoPath: 'N/A',
+    subcomponentName: 'N/A',
+    subcomponents: [],
+    type: 'component',
+  },
+];
